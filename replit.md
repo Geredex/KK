@@ -2,7 +2,7 @@
 
 ## Overview
 
-DEX is a comprehensive tournament management application specifically designed for Shito Ryu Karate kumite tournaments. The system enables tournament organizers to create and manage knockout-style tournaments with 16 or 32 participants, featuring authentic karate scoring (ippon, wazari, yuko), warning system with automatic elimination at 5 warnings, customizable rounds (1-20), timer presets with sound alerts, and belt color identification (red/blue). The application provides a streamlined interface for tournament setup, player registration with automatic belt color assignment, bracket visualization, and real-time match management with professional karate scoring and elimination rules.
+DEX is a comprehensive tournament management application specifically designed for Shito Ryu Karate kumite tournaments. The system enables tournament organizers to create and manage knockout-style tournaments with 2-128 participants, featuring authentic karate scoring (ippon, wazari, yuko), warning system with automatic elimination at 5 warnings, customizable rounds (1-20), timer presets with sound alerts, and belt color identification (red/blue). The application provides a streamlined interface for tournament setup with flexible player counts, player registration with automatic belt color assignment, bracket visualization, and real-time match management with professional karate scoring and elimination rules.
 
 ## User Preferences
 

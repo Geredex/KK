@@ -6,7 +6,7 @@ import { z } from "zod";
 export const tournaments = pgTable("tournaments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
-  size: integer("size").notNull(), // 16 or 32
+  size: integer("size").notNull(), // Number of players (2-128)
   status: text("status").notNull().default("setup"), // setup, active, completed
   currentRound: integer("current_round").default(1),
   totalRounds: integer("total_rounds").notNull(),
@@ -48,7 +48,7 @@ export const insertTournamentSchema = createInsertSchema(tournaments).omit({
   id: true,
   createdAt: true,
 }).extend({
-  size: z.number().min(16).max(32),
+  size: z.number().min(2).max(128), // Allow 2-128 players
   totalRounds: z.number().min(1).max(20).optional(),
 });
 

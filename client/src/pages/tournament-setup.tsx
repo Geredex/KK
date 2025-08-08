@@ -14,7 +14,8 @@ export default function TournamentSetup() {
   const queryClient = useQueryClient();
   
   const [tournamentName, setTournamentName] = useState("");
-  const [tournamentSize, setTournamentSize] = useState<16 | 32>(16);
+  const [tournamentSize, setTournamentSize] = useState<number>(8);
+  const [customPlayerCount, setCustomPlayerCount] = useState<string>("");
   const [customRounds, setCustomRounds] = useState<number | null>(null);
   const [newPlayerName, setNewPlayerName] = useState("");
   const [currentTournamentId, setCurrentTournamentId] = useState<string | null>(
@@ -188,44 +189,83 @@ export default function TournamentSetup() {
 
           {/* Tournament Size Selection */}
           <div className="mb-8">
-            <label className="block text-lg font-semibold text-gray-700 mb-4">Tournament Size</label>
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                data-testid="tournament-size-16"
-                variant={tournamentSize === 16 ? "default" : "outline"}
-                className={`h-auto p-6 flex flex-col items-center ${
-                  tournamentSize === 16
-                    ? "bg-tournament-50 border-tournament-200 text-tournament-600 hover:bg-tournament-100"
-                    : "border-gray-200 hover:border-tournament-500"
-                }`}
-                onClick={() => {
-                  setTournamentSize(16);
-                  setCustomRounds(null);
-                }}
-                disabled={!!currentTournamentId}
-              >
-                <div className="text-2xl font-bold mb-2">16</div>
-                <div className="text-sm">Players</div>
-                <div className="text-xs mt-2 opacity-75">Default: 4 Rounds</div>
-              </Button>
-              <Button
-                data-testid="tournament-size-32"
-                variant={tournamentSize === 32 ? "default" : "outline"}
-                className={`h-auto p-6 flex flex-col items-center ${
-                  tournamentSize === 32
-                    ? "bg-tournament-50 border-tournament-200 text-tournament-600 hover:bg-tournament-100"
-                    : "border-gray-200 hover:border-tournament-500"
-                }`}
-                onClick={() => {
-                  setTournamentSize(32);
-                  setCustomRounds(null);
-                }}
-                disabled={!!currentTournamentId}
-              >
-                <div className="text-2xl font-bold mb-2">32</div>
-                <div className="text-sm">Players</div>
-                <div className="text-xs mt-2 opacity-75">Default: 5 Rounds</div>
-              </Button>
+            <label className="block text-lg font-semibold text-gray-700 mb-4">Number of Players</label>
+            
+            {/* Preset Player Counts */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+              {[4, 8, 16, 32].map((size) => (
+                <Button
+                  key={size}
+                  data-testid={`tournament-size-${size}`}
+                  variant={tournamentSize === size ? "default" : "outline"}
+                  className={`h-auto p-4 flex flex-col items-center ${
+                    tournamentSize === size
+                      ? "bg-tournament-50 border-tournament-200 text-tournament-600 hover:bg-tournament-100"
+                      : "border-gray-200 hover:border-tournament-500"
+                  }`}
+                  onClick={() => {
+                    setTournamentSize(size);
+                    setCustomPlayerCount("");
+                    setCustomRounds(null);
+                  }}
+                  disabled={!!currentTournamentId}
+                >
+                  <div className="text-xl font-bold mb-1">{size}</div>
+                  <div className="text-xs">Players</div>
+                  <div className="text-xs mt-1 opacity-75">
+                    {Math.ceil(Math.log2(size))} Rounds
+                  </div>
+                </Button>
+              ))}
+            </div>
+
+            {/* Custom Player Count */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Custom Player Count (2-128)
+              </label>
+              <div className="flex gap-3">
+                <Input
+                  data-testid="input-custom-player-count"
+                  type="number"
+                  min="2"
+                  max="128"
+                  placeholder="Enter number of players..."
+                  value={customPlayerCount}
+                  onChange={(e) => {
+                    setCustomPlayerCount(e.target.value);
+                    const count = parseInt(e.target.value);
+                    if (count >= 2 && count <= 128) {
+                      setTournamentSize(count);
+                      setCustomRounds(null);
+                    }
+                  }}
+                  disabled={!!currentTournamentId}
+                  className="max-w-xs"
+                />
+                {customPlayerCount && (
+                  <Button
+                    data-testid="button-clear-custom"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setCustomPlayerCount("");
+                      setTournamentSize(8);
+                    }}
+                    disabled={!!currentTournamentId}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
+              {customPlayerCount && (
+                <p className="text-sm text-gray-600 mt-2">
+                  {parseInt(customPlayerCount) > 0 && parseInt(customPlayerCount) <= 128 
+                    ? `${Math.ceil(Math.log2(parseInt(customPlayerCount)))} rounds needed`
+                    : "Enter a number between 2 and 128"}
+                </p>
+              )}
             </div>
           </div>
 

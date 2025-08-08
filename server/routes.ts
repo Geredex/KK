@@ -200,18 +200,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: `Need exactly ${tournament.size} players to generate bracket` });
       }
 
-      // Generate first round matches
-      const firstRoundMatches = [];
-      for (let i = 0; i < players.length; i += 2) {
-        const match = await storage.createMatch({
-          tournamentId,
-          round: 1,
-          position: Math.floor(i / 2) + 1,
-          player1Id: players[i].id,
-          player2Id: players[i + 1].id,
-          status: "pending"
-        });
-        firstRoundMatches.push(match);
+      // For non-power-of-2 player counts, we need to handle byes in the first round
+      const isPowerOfTwo = (tournament.size & (tournament.size - 1)) === 0;
+      let firstRoundMatches = [];
+      
+      if (isPowerOfTwo) {
+        // Standard bracket for power of 2
+        for (let i = 0; i < players.length; i += 2) {
+          const match = await storage.createMatch({
+            tournamentId,
+            round: 1,
+            position: Math.floor(i / 2) + 1,
+            player1Id: players[i].id,
+            player2Id: players[i + 1].id,
+            status: "pending"
+          });
+          firstRoundMatches.push(match);
+        }
+      } else {
+        // Handle non-power-of-2 with byes
+        const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(tournament.size)));
+        const byes = nextPowerOfTwo - tournament.size;
+        const firstRoundPlayers = tournament.size - byes;
+        
+        // Create matches for players who don't get byes
+        for (let i = 0; i < firstRoundPlayers; i += 2) {
+          const match = await storage.createMatch({
+            tournamentId,
+            round: 1,
+            position: Math.floor(i / 2) + 1,
+            player1Id: players[i].id,
+            player2Id: players[i + 1].id,
+            status: "pending"
+          });
+          firstRoundMatches.push(match);
+        }
+        
+        // Automatically advance bye players to round 2
+        const byeWinners = players.slice(firstRoundPlayers);
+        // We'll handle bye advancement in the next round creation
       }
 
       // Generate subsequent round matches (empty for now)
