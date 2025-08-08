@@ -16,6 +16,70 @@ export default function MatchTimer() {
   const [timerSeconds, setTimerSeconds] = useState(120); // 2 minutes
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
+  const [selectedPreset, setSelectedPreset] = useState(120);
+  
+  // Timer presets in seconds
+  const timerPresets = [
+    { label: "30 seconds", value: 30 },
+    { label: "1 minute", value: 60 },
+    { label: "2 minutes", value: 120 },
+    { label: "3 minutes", value: 180 },
+    { label: "5 minutes", value: 300 },
+    { label: "10 minutes", value: 600 },
+  ];
+
+  // Sound alert functions
+  const playStartSound = () => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  };
+
+  const playWarningSound = () => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    for (let i = 0; i < 3; i++) {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + i * 0.2);
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime + i * 0.2);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.2 + 0.15);
+      
+      oscillator.start(audioContext.currentTime + i * 0.2);
+      oscillator.stop(audioContext.currentTime + i * 0.2 + 0.15);
+    }
+  };
+
+  const playEndSound = () => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    for (let i = 0; i < 5; i++) {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(400, audioContext.currentTime + i * 0.1);
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.1);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.1 + 0.2);
+      
+      oscillator.start(audioContext.currentTime + i * 0.1);
+      oscillator.stop(audioContext.currentTime + i * 0.1 + 0.2);
+    }
+  };
 
   const matchId = localStorage.getItem("currentMatchId");
   const tournamentId = localStorage.getItem("currentTournamentId");
@@ -87,19 +151,26 @@ export default function MatchTimer() {
     },
   });
 
-  // Timer management
+  // Timer management with sound alerts
   useEffect(() => {
     if (isTimerRunning && timerSeconds > 0) {
       const interval = setInterval(() => {
         setTimerSeconds((prev) => {
           if (prev <= 1) {
             setIsTimerRunning(false);
+            playEndSound();
             toast({
               title: "Time's Up!",
               description: "The match timer has ended.",
             });
             return 0;
           }
+          
+          // Warning sounds at 30, 10, and 5 seconds
+          if (prev === 31 || prev === 11 || prev === 6) {
+            playWarningSound();
+          }
+          
           return prev - 1;
         });
       }, 1000);
@@ -141,6 +212,7 @@ export default function MatchTimer() {
   const player2 = players.find(p => p.id === match.player2Id);
 
   const handleStartTimer = () => {
+    playStartSound();
     setIsTimerRunning(true);
   };
 
@@ -150,7 +222,13 @@ export default function MatchTimer() {
 
   const handleResetTimer = () => {
     setIsTimerRunning(false);
-    setTimerSeconds(120);
+    setTimerSeconds(selectedPreset);
+  };
+
+  const handlePresetChange = (preset: number) => {
+    setSelectedPreset(preset);
+    setTimerSeconds(preset);
+    setIsTimerRunning(false);
   };
 
   const handleKarateScore = (playerNumber: 1 | 2, scoreType: 'ippon' | 'wazari' | 'yuko' | 'warning', increment: boolean = true) => {
@@ -228,14 +306,14 @@ export default function MatchTimer() {
       winnerId,
       player1Score,
       player2Score,
-      player1Ippon: match.player1Ippon,
-      player1Wazari: match.player1Wazari,
-      player1Yuko: match.player1Yuko,
-      player1Warnings: match.player1Warnings,
-      player2Ippon: match.player2Ippon,
-      player2Wazari: match.player2Wazari,
-      player2Yuko: match.player2Yuko,
-      player2Warnings: match.player2Warnings,
+      player1Ippon: match.player1Ippon || undefined,
+      player1Wazari: match.player1Wazari || undefined,
+      player1Yuko: match.player1Yuko || undefined,
+      player1Warnings: match.player1Warnings || undefined,
+      player2Ippon: match.player2Ippon || undefined,
+      player2Wazari: match.player2Wazari || undefined,
+      player2Yuko: match.player2Yuko || undefined,
+      player2Warnings: match.player2Warnings || undefined,
     });
   };
 
@@ -266,6 +344,42 @@ export default function MatchTimer() {
                 {formatTime(timerSeconds)}
               </div>
               <div className="text-gray-400 text-lg mt-2">Match Time</div>
+            </div>
+
+            {/* Timer Presets */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-700 mb-3 text-center">Timer Presets</h3>
+              <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
+                {timerPresets.map((preset) => (
+                  <Button
+                    key={preset.value}
+                    data-testid={`button-preset-${preset.value}`}
+                    onClick={() => handlePresetChange(preset.value)}
+                    disabled={isTimerRunning}
+                    variant={selectedPreset === preset.value ? "default" : "outline"}
+                    className={`text-sm ${
+                      selectedPreset === preset.value 
+                        ? "bg-tournament-500 hover:bg-tournament-600 text-white" 
+                        : "hover:bg-gray-100"
+                    }`}
+                    size="sm"
+                  >
+                    {preset.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Sound Alerts Info */}
+            <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
+              <h4 className="text-sm font-semibold text-blue-800 mb-2 flex items-center">
+                <i className="fas fa-volume-up mr-2"></i>Sound Alerts
+              </h4>
+              <div className="text-xs text-blue-700 space-y-1">
+                <div>🔔 Start: Single beep when timer starts</div>
+                <div>⚠️ Warnings: Triple beep at 30s, 10s, 5s remaining</div>
+                <div>🔚 End: Five beeps when time is up</div>
+              </div>
             </div>
 
             {/* Timer Controls */}
