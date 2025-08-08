@@ -371,19 +371,39 @@ export default function TournamentSetup() {
             </div>
           )}
 
-          {/* Start Tournament Button */}
+          {/* Tournament Actions */}
           {currentTournamentId && (
-            <div className="flex justify-center">
-              <Button
-                data-testid="button-start-tournament"
-                onClick={handleStartTournament}
-                disabled={players.length !== tournamentSize || generateBracketMutation.isPending}
-                className="bg-tournament-500 hover:bg-tournament-600 text-white px-8 py-4 text-xl font-semibold shadow-lg"
-                size="lg"
-              >
-                <i className="fas fa-play mr-3"></i>
-                Start Tournament
-              </Button>
+            <div className="space-y-4">
+              {/* Start Tournament Button */}
+              <div className="flex justify-center">
+                <Button
+                  data-testid="button-start-tournament"
+                  onClick={handleStartTournament}
+                  disabled={players.length !== tournamentSize || generateBracketMutation.isPending}
+                  className="bg-tournament-500 hover:bg-tournament-600 text-white px-8 py-4 text-xl font-semibold shadow-lg"
+                  size="lg"
+                >
+                  <i className="fas fa-play mr-3"></i>
+                  Start Tournament
+                </Button>
+              </div>
+
+              {/* Reset Tournament Button */}
+              <div className="flex justify-center">
+                <Button
+                  data-testid="button-reset-tournament"
+                  onClick={() => {
+                    localStorage.removeItem("currentTournamentId");
+                    localStorage.removeItem("currentMatchId");
+                    window.location.reload();
+                  }}
+                  variant="outline"
+                  className="text-red-600 border-red-200 hover:bg-red-50 px-4 py-2"
+                  size="sm"
+                >
+                  <i className="fas fa-refresh mr-2"></i>Start New Tournament
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
