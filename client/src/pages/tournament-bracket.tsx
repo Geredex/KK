@@ -72,6 +72,12 @@ export default function TournamentBracket() {
     return player?.name || "TBD";
   };
 
+  const getPlayerWithColor = (playerId: string | null) => {
+    if (!playerId) return { name: "TBD", beltColor: "gray" };
+    const player = players.find(p => p.id === playerId);
+    return { name: player?.name || "TBD", beltColor: player?.beltColor || "gray" };
+  };
+
   const getMatchesByRound = (round: number) => {
     return matches.filter(match => match.round === round).sort((a, b) => a.position - b.position);
   };
@@ -140,22 +146,31 @@ export default function TournamentBracket() {
                         const player2Name = getPlayerName(match.player2Id);
                         const canStart = match.status === "pending" && match.player1Id && match.player2Id;
 
+                        const player1 = getPlayerWithColor(match.player1Id);
+                        const player2 = getPlayerWithColor(match.player2Id);
+
                         return (
                           <div
                             key={match.id}
                             data-testid={`card-match-${match.id}`}
-                            className={`match-card border-2 rounded-lg p-3 shadow-sm min-w-[200px] ${getMatchStatusColor(match.status)}`}
+                            className={`match-card border-2 rounded-lg p-3 shadow-sm min-w-[220px] ${getMatchStatusColor(match.status)}`}
                           >
                             <div className="match-player flex items-center justify-between p-2 border-b border-gray-100">
-                              <span
-                                data-testid={`text-player1-${match.id}`}
-                                className={`font-medium ${
-                                  match.winnerId === match.player1Id ? "text-green-600" : 
-                                  !match.player1Id ? "text-gray-400" : "text-gray-900"
-                                }`}
-                              >
-                                {player1Name}
-                              </span>
+                              <div className="flex items-center space-x-2">
+                                <div className={`w-3 h-3 rounded-full ${
+                                  player1.beltColor === "red" ? "bg-red-500" : 
+                                  player1.beltColor === "blue" ? "bg-blue-500" : "bg-gray-300"
+                                }`}></div>
+                                <span
+                                  data-testid={`text-player1-${match.id}`}
+                                  className={`font-medium ${
+                                    match.winnerId === match.player1Id ? "text-green-600" : 
+                                    !match.player1Id ? "text-gray-400" : "text-gray-900"
+                                  }`}
+                                >
+                                  {player1.name}
+                                </span>
+                              </div>
                               <span
                                 data-testid={`text-score1-${match.id}`}
                                 className={`text-lg font-bold ${
@@ -168,15 +183,21 @@ export default function TournamentBracket() {
                               </span>
                             </div>
                             <div className="match-player flex items-center justify-between p-2">
-                              <span
-                                data-testid={`text-player2-${match.id}`}
-                                className={`font-medium ${
-                                  match.winnerId === match.player2Id ? "text-green-600" : 
-                                  !match.player2Id ? "text-gray-400" : "text-gray-900"
-                                }`}
-                              >
-                                {player2Name}
-                              </span>
+                              <div className="flex items-center space-x-2">
+                                <div className={`w-3 h-3 rounded-full ${
+                                  player2.beltColor === "red" ? "bg-red-500" : 
+                                  player2.beltColor === "blue" ? "bg-blue-500" : "bg-gray-300"
+                                }`}></div>
+                                <span
+                                  data-testid={`text-player2-${match.id}`}
+                                  className={`font-medium ${
+                                    match.winnerId === match.player2Id ? "text-green-600" : 
+                                    !match.player2Id ? "text-gray-400" : "text-gray-900"
+                                  }`}
+                                >
+                                  {player2.name}
+                                </span>
+                              </div>
                               <span
                                 data-testid={`text-score2-${match.id}`}
                                 className={`text-lg font-bold ${

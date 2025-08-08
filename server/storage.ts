@@ -77,10 +77,15 @@ export class MemStorage implements IStorage {
     const existingPlayers = Array.from(this.players.values()).filter(p => p.tournamentId === insertPlayer.tournamentId);
     const position = existingPlayers.length + 1;
     
+    // Automatically assign belt color: odd positions get red, even positions get blue
+    const beltColor = position % 2 === 1 ? "red" : "blue";
+    
     const player: Player = {
-      ...insertPlayer,
       id,
+      name: insertPlayer.name,
+      tournamentId: insertPlayer.tournamentId,
       position,
+      beltColor: insertPlayer.beltColor || beltColor,
     };
     this.players.set(id, player);
     return player;
@@ -117,6 +122,14 @@ export class MemStorage implements IStorage {
       player2Id: insertMatch.player2Id || null,
       player1Score: 0,
       player2Score: 0,
+      player1Ippon: 0,
+      player1Wazari: 0,
+      player1Yuko: 0,
+      player1Warnings: 0,
+      player2Ippon: 0,
+      player2Wazari: 0,
+      player2Yuko: 0,
+      player2Warnings: 0,
       status: "pending",
       winnerId: null,
       startTime: null,
@@ -146,6 +159,14 @@ export class MemStorage implements IStorage {
       ...match, 
       player1Score: scores.player1Score,
       player2Score: scores.player2Score,
+      player1Ippon: scores.player1Ippon ?? match.player1Ippon,
+      player1Wazari: scores.player1Wazari ?? match.player1Wazari,
+      player1Yuko: scores.player1Yuko ?? match.player1Yuko,
+      player1Warnings: scores.player1Warnings ?? match.player1Warnings,
+      player2Ippon: scores.player2Ippon ?? match.player2Ippon,
+      player2Wazari: scores.player2Wazari ?? match.player2Wazari,
+      player2Yuko: scores.player2Yuko ?? match.player2Yuko,
+      player2Warnings: scores.player2Warnings ?? match.player2Warnings,
       status: "in_progress",
       ...(match.startTime === null && { startTime: new Date() })
     };
@@ -161,6 +182,14 @@ export class MemStorage implements IStorage {
       ...match, 
       player1Score: result.player1Score,
       player2Score: result.player2Score,
+      player1Ippon: result.player1Ippon ?? match.player1Ippon,
+      player1Wazari: result.player1Wazari ?? match.player1Wazari,
+      player1Yuko: result.player1Yuko ?? match.player1Yuko,
+      player1Warnings: result.player1Warnings ?? match.player1Warnings,
+      player2Ippon: result.player2Ippon ?? match.player2Ippon,
+      player2Wazari: result.player2Wazari ?? match.player2Wazari,
+      player2Yuko: result.player2Yuko ?? match.player2Yuko,
+      player2Warnings: result.player2Warnings ?? match.player2Warnings,
       winnerId: result.winnerId,
       status: "completed",
       endTime: new Date(),

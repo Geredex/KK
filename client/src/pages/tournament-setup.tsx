@@ -236,7 +236,7 @@ export default function TournamentSetup() {
               Choose how many rounds you want in your tournament (default is {tournamentSize === 16 ? '4' : '5'} rounds)
             </p>
             <div className="grid grid-cols-5 gap-3">
-              {Array.from({ length: 10 }, (_, i) => i + 1).map((rounds) => (
+              {Array.from({ length: 20 }, (_, i) => i + 1).map((rounds) => (
                 <Button
                   key={rounds}
                   data-testid={`rounds-${rounds}`}
@@ -338,11 +338,22 @@ export default function TournamentSetup() {
                     className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center justify-between"
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="bg-tournament-100 text-tournament-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">
+                      <div className={`${
+                        player.beltColor === "red" 
+                          ? "bg-red-100 text-red-600 border-red-200" 
+                          : "bg-blue-100 text-blue-600 border-blue-200"
+                      } border-2 rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium`}>
                         {index + 1}
                       </div>
                       <span data-testid={`text-player-name-${player.id}`} className="font-medium text-gray-900">
                         {player.name}
+                      </span>
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        player.beltColor === "red" 
+                          ? "bg-red-100 text-red-600" 
+                          : "bg-blue-100 text-blue-600"
+                      }`}>
+                        {player.beltColor.toUpperCase()}
                       </span>
                     </div>
                     <Button

@@ -18,6 +18,7 @@ export const players = pgTable("players", {
   name: text("name").notNull(),
   tournamentId: varchar("tournament_id").notNull(),
   position: integer("position").notNull(), // seeding position
+  beltColor: text("belt_color").notNull().default("red"), // red or blue
 });
 
 export const matches = pgTable("matches", {
@@ -29,6 +30,14 @@ export const matches = pgTable("matches", {
   player2Id: varchar("player2_id"),
   player1Score: integer("player1_score").default(0),
   player2Score: integer("player2_score").default(0),
+  player1Ippon: integer("player1_ippon").default(0),
+  player1Wazari: integer("player1_wazari").default(0),
+  player1Yuko: integer("player1_yuko").default(0),
+  player1Warnings: integer("player1_warnings").default(0),
+  player2Ippon: integer("player2_ippon").default(0),
+  player2Wazari: integer("player2_wazari").default(0),
+  player2Yuko: integer("player2_yuko").default(0),
+  player2Warnings: integer("player2_warnings").default(0),
   winnerId: varchar("winner_id"),
   status: text("status").notNull().default("pending"), // pending, in_progress, completed
   startTime: timestamp("start_time"),
@@ -40,7 +49,7 @@ export const insertTournamentSchema = createInsertSchema(tournaments).omit({
   createdAt: true,
 }).extend({
   size: z.number().min(16).max(32),
-  totalRounds: z.number().min(1).max(10).optional(),
+  totalRounds: z.number().min(1).max(20).optional(),
 });
 
 export const insertPlayerSchema = createInsertSchema(players).omit({
@@ -57,12 +66,28 @@ export const insertMatchSchema = createInsertSchema(matches).omit({
 export const updateMatchScoreSchema = z.object({
   player1Score: z.number().min(0),
   player2Score: z.number().min(0),
+  player1Ippon: z.number().min(0).optional(),
+  player1Wazari: z.number().min(0).optional(),
+  player1Yuko: z.number().min(0).optional(),
+  player1Warnings: z.number().min(0).optional(),
+  player2Ippon: z.number().min(0).optional(),
+  player2Wazari: z.number().min(0).optional(),
+  player2Yuko: z.number().min(0).optional(),
+  player2Warnings: z.number().min(0).optional(),
 });
 
 export const completeMatchSchema = z.object({
   winnerId: z.string(),
   player1Score: z.number().min(0),
   player2Score: z.number().min(0),
+  player1Ippon: z.number().min(0).optional(),
+  player1Wazari: z.number().min(0).optional(),
+  player1Yuko: z.number().min(0).optional(),
+  player1Warnings: z.number().min(0).optional(),
+  player2Ippon: z.number().min(0).optional(),
+  player2Wazari: z.number().min(0).optional(),
+  player2Yuko: z.number().min(0).optional(),
+  player2Warnings: z.number().min(0).optional(),
 });
 
 export type Tournament = typeof tournaments.$inferSelect;
