@@ -39,11 +39,12 @@ export class MemStorage implements IStorage {
   // Tournament methods
   async createTournament(insertTournament: InsertTournament): Promise<Tournament> {
     const id = randomUUID();
-    const defaultRounds = insertTournament.size === 16 ? 4 : 5;
+    const defaultRounds = Math.ceil(Math.log2(insertTournament.size));
     const totalRounds = insertTournament.totalRounds || defaultRounds;
     const tournament: Tournament = {
       id,
       name: insertTournament.name,
+      type: insertTournament.type || "kumite",
       size: insertTournament.size,
       status: "setup",
       currentRound: 1,
@@ -126,10 +127,14 @@ export class MemStorage implements IStorage {
       player1Wazari: 0,
       player1Yuko: 0,
       player1Warnings: 0,
+      player1Senshu: false,
       player2Ippon: 0,
       player2Wazari: 0,
       player2Yuko: 0,
       player2Warnings: 0,
+      player2Senshu: false,
+      player1KataScores: null,
+      player2KataScores: null,
       status: "pending",
       winnerId: null,
       startTime: null,
@@ -163,10 +168,14 @@ export class MemStorage implements IStorage {
       player1Wazari: scores.player1Wazari ?? match.player1Wazari,
       player1Yuko: scores.player1Yuko ?? match.player1Yuko,
       player1Warnings: scores.player1Warnings ?? match.player1Warnings,
+      player1Senshu: scores.player1Senshu ?? match.player1Senshu,
       player2Ippon: scores.player2Ippon ?? match.player2Ippon,
       player2Wazari: scores.player2Wazari ?? match.player2Wazari,
       player2Yuko: scores.player2Yuko ?? match.player2Yuko,
       player2Warnings: scores.player2Warnings ?? match.player2Warnings,
+      player2Senshu: scores.player2Senshu ?? match.player2Senshu,
+      player1KataScores: scores.player1KataScores ?? match.player1KataScores,
+      player2KataScores: scores.player2KataScores ?? match.player2KataScores,
       status: "in_progress",
       ...(match.startTime === null && { startTime: new Date() })
     };
@@ -186,10 +195,14 @@ export class MemStorage implements IStorage {
       player1Wazari: result.player1Wazari ?? match.player1Wazari,
       player1Yuko: result.player1Yuko ?? match.player1Yuko,
       player1Warnings: result.player1Warnings ?? match.player1Warnings,
+      player1Senshu: result.player1Senshu ?? match.player1Senshu,
       player2Ippon: result.player2Ippon ?? match.player2Ippon,
       player2Wazari: result.player2Wazari ?? match.player2Wazari,
       player2Yuko: result.player2Yuko ?? match.player2Yuko,
       player2Warnings: result.player2Warnings ?? match.player2Warnings,
+      player2Senshu: result.player2Senshu ?? match.player2Senshu,
+      player1KataScores: result.player1KataScores ?? match.player1KataScores,
+      player2KataScores: result.player2KataScores ?? match.player2KataScores,
       winnerId: result.winnerId,
       status: "completed",
       endTime: new Date(),

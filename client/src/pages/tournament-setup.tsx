@@ -14,6 +14,7 @@ export default function TournamentSetup() {
   const queryClient = useQueryClient();
   
   const [tournamentName, setTournamentName] = useState("");
+  const [tournamentType, setTournamentType] = useState<"kumite" | "kata">("kumite");
   const [tournamentSize, setTournamentSize] = useState<number>(8);
   const [customPlayerCount, setCustomPlayerCount] = useState<string>("");
   const [customRounds, setCustomRounds] = useState<number | null>(null);
@@ -29,7 +30,7 @@ export default function TournamentSetup() {
   });
 
   const createTournamentMutation = useMutation({
-    mutationFn: async (data: { name: string; size: number; totalRounds?: number }) => {
+    mutationFn: async (data: { name: string; type: "kumite" | "kata"; size: number; totalRounds?: number }) => {
       const response = await apiRequest("POST", "/api/tournaments", data);
       return response.json();
     },
@@ -39,7 +40,7 @@ export default function TournamentSetup() {
       queryClient.invalidateQueries({ queryKey: ["/api/tournaments"] });
       toast({
         title: "Tournament Created",
-        description: `${tournament.name} has been created successfully.`,
+        description: `${tournament.name} (${tournament.type}) has been created successfully.`,
       });
     },
     onError: (error: any) => {
@@ -128,8 +129,9 @@ export default function TournamentSetup() {
       });
       return;
     }
-    const data: { name: string; size: number; totalRounds?: number } = { 
-      name: tournamentName, 
+    const data: { name: string; type: "kumite" | "kata"; size: number; totalRounds?: number } = { 
+      name: tournamentName,
+      type: tournamentType,
       size: tournamentSize 
     };
     if (customRounds !== null) {
@@ -184,7 +186,50 @@ export default function TournamentSetup() {
         <CardContent className="p-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Create New Tournament</h2>
-            <p className="text-gray-600">Set up your Shito Ryu Karate kumite tournament</p>
+            <p className="text-gray-600">
+              Set up your Shito Ryu Karate {tournamentType === "kumite" ? "kumite" : "kata"} tournament
+            </p>
+          </div>
+
+          {/* Tournament Type Selection */}
+          <div className="mb-8">
+            <label className="block text-lg font-semibold text-gray-700 mb-4">Tournament Type</label>
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                data-testid="button-type-kumite"
+                variant={tournamentType === "kumite" ? "default" : "outline"}
+                className={`h-auto p-6 flex flex-col items-center ${
+                  tournamentType === "kumite"
+                    ? "bg-red-50 border-2 border-red-400 text-red-700 hover:bg-red-100"
+                    : "border-gray-200 hover:border-red-300"
+                }`}
+                onClick={() => setTournamentType("kumite")}
+                disabled={!!currentTournamentId}
+              >
+                <i className="fas fa-fist-raised text-3xl mb-2"></i>
+                <div className="text-xl font-bold mb-1">Kumite</div>
+                <div className="text-sm text-center">
+                  Sparring competition with scoring points
+                </div>
+              </Button>
+              <Button
+                data-testid="button-type-kata"
+                variant={tournamentType === "kata" ? "default" : "outline"}
+                className={`h-auto p-6 flex flex-col items-center ${
+                  tournamentType === "kata"
+                    ? "bg-blue-50 border-2 border-blue-400 text-blue-700 hover:bg-blue-100"
+                    : "border-gray-200 hover:border-blue-300"
+                }`}
+                onClick={() => setTournamentType("kata")}
+                disabled={!!currentTournamentId}
+              >
+                <i className="fas fa-user-ninja text-3xl mb-2"></i>
+                <div className="text-xl font-bold mb-1">Kata</div>
+                <div className="text-sm text-center">
+                  Form performance judged by 5 judges
+                </div>
+              </Button>
+            </div>
           </div>
 
           {/* Tournament Size Selection */}

@@ -6,6 +6,7 @@ import { z } from "zod";
 export const tournaments = pgTable("tournaments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
+  type: text("type").notNull().default("kumite"), // kumite or kata
   size: integer("size").notNull(), // Number of players (2-128)
   status: text("status").notNull().default("setup"), // setup, active, completed
   currentRound: integer("current_round").default(1),
@@ -34,10 +35,14 @@ export const matches = pgTable("matches", {
   player1Wazari: integer("player1_wazari").default(0),
   player1Yuko: integer("player1_yuko").default(0),
   player1Warnings: integer("player1_warnings").default(0),
+  player1Senshu: boolean("player1_senshu").default(false),
   player2Ippon: integer("player2_ippon").default(0),
   player2Wazari: integer("player2_wazari").default(0),
   player2Yuko: integer("player2_yuko").default(0),
   player2Warnings: integer("player2_warnings").default(0),
+  player2Senshu: boolean("player2_senshu").default(false),
+  player1KataScores: jsonb("player1_kata_scores").$type<number[]>(), // 5 judge scores for kata
+  player2KataScores: jsonb("player2_kata_scores").$type<number[]>(), // 5 judge scores for kata
   winnerId: varchar("winner_id"),
   status: text("status").notNull().default("pending"), // pending, in_progress, completed
   startTime: timestamp("start_time"),
@@ -48,6 +53,7 @@ export const insertTournamentSchema = createInsertSchema(tournaments).omit({
   id: true,
   createdAt: true,
 }).extend({
+  type: z.enum(["kumite", "kata"]).default("kumite"),
   size: z.number().min(2).max(128), // Allow 2-128 players
   totalRounds: z.number().min(1).max(20).optional(),
 });
@@ -70,10 +76,14 @@ export const updateMatchScoreSchema = z.object({
   player1Wazari: z.number().min(0).optional(),
   player1Yuko: z.number().min(0).optional(),
   player1Warnings: z.number().min(0).optional(),
+  player1Senshu: z.boolean().optional(),
   player2Ippon: z.number().min(0).optional(),
   player2Wazari: z.number().min(0).optional(),
   player2Yuko: z.number().min(0).optional(),
   player2Warnings: z.number().min(0).optional(),
+  player2Senshu: z.boolean().optional(),
+  player1KataScores: z.array(z.number()).optional(),
+  player2KataScores: z.array(z.number()).optional(),
 });
 
 export const completeMatchSchema = z.object({
@@ -84,10 +94,14 @@ export const completeMatchSchema = z.object({
   player1Wazari: z.number().min(0).optional(),
   player1Yuko: z.number().min(0).optional(),
   player1Warnings: z.number().min(0).optional(),
+  player1Senshu: z.boolean().optional(),
   player2Ippon: z.number().min(0).optional(),
   player2Wazari: z.number().min(0).optional(),
   player2Yuko: z.number().min(0).optional(),
   player2Warnings: z.number().min(0).optional(),
+  player2Senshu: z.boolean().optional(),
+  player1KataScores: z.array(z.number()).optional(),
+  player2KataScores: z.array(z.number()).optional(),
 });
 
 export type Tournament = typeof tournaments.$inferSelect;

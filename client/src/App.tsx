@@ -8,6 +8,7 @@ import MobileNav from "@/components/mobile-nav";
 import TournamentSetup from "@/pages/tournament-setup";
 import TournamentBracket from "@/pages/tournament-bracket";
 import MatchTimer from "@/pages/match-timer";
+import MatchKata from "@/pages/match-kata";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/" component={TournamentSetup} />
       <Route path="/bracket" component={TournamentBracket} />
       <Route path="/timer" component={MatchTimer} />
+      <Route path="/kata" component={MatchKata} />
       <Route component={NotFound} />
     </Switch>
   );

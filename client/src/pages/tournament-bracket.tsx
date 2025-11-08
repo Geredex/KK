@@ -87,7 +87,9 @@ export default function TournamentBracket() {
       updateMatchStatusMutation.mutate({ matchId: match.id, status: "in_progress" });
     }
     localStorage.setItem("currentMatchId", match.id);
-    setLocation("/timer");
+    // Route to the correct match page based on tournament type
+    const route = tournament.type === "kata" ? "/kata" : "/timer";
+    setLocation(route);
   };
 
   return (

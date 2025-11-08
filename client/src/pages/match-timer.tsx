@@ -102,10 +102,12 @@ export default function MatchTimer() {
       player1Wazari?: number;
       player1Yuko?: number;
       player1Warnings?: number;
+      player1Senshu?: boolean;
       player2Ippon?: number;
       player2Wazari?: number;
       player2Yuko?: number;
       player2Warnings?: number;
+      player2Senshu?: boolean;
     }) => {
       const response = await apiRequest("PATCH", `/api/matches/${matchId}/score`, data);
       return response.json();
@@ -125,10 +127,12 @@ export default function MatchTimer() {
       player1Wazari?: number;
       player1Yuko?: number;
       player1Warnings?: number;
+      player1Senshu?: boolean;
       player2Ippon?: number;
       player2Wazari?: number;
       player2Yuko?: number;
       player2Warnings?: number;
+      player2Senshu?: boolean;
     }) => {
       const response = await apiRequest("PATCH", `/api/matches/${matchId}/complete`, data);
       return response.json();
@@ -231,6 +235,37 @@ export default function MatchTimer() {
     setIsTimerRunning(false);
   };
 
+  const handleSenshuToggle = (playerNumber: 1 | 2) => {
+    const currentData = {
+      player1Score: match.player1Score || 0,
+      player2Score: match.player2Score || 0,
+      player1Ippon: match.player1Ippon || 0,
+      player1Wazari: match.player1Wazari || 0,
+      player1Yuko: match.player1Yuko || 0,
+      player1Warnings: match.player1Warnings || 0,
+      player1Senshu: match.player1Senshu || false,
+      player2Ippon: match.player2Ippon || 0,
+      player2Wazari: match.player2Wazari || 0,
+      player2Yuko: match.player2Yuko || 0,
+      player2Warnings: match.player2Warnings || 0,
+      player2Senshu: match.player2Senshu || false,
+    };
+
+    if (playerNumber === 1) {
+      currentData.player1Senshu = !currentData.player1Senshu;
+      if (currentData.player1Senshu) {
+        currentData.player2Senshu = false; // Only one player can have senshu
+      }
+    } else {
+      currentData.player2Senshu = !currentData.player2Senshu;
+      if (currentData.player2Senshu) {
+        currentData.player1Senshu = false; // Only one player can have senshu
+      }
+    }
+
+    updateScoreMutation.mutate(currentData);
+  };
+
   const handleKarateScore = (playerNumber: 1 | 2, scoreType: 'ippon' | 'wazari' | 'yuko' | 'warning', increment: boolean = true) => {
     const currentData = {
       player1Score: match.player1Score || 0,
@@ -239,10 +274,12 @@ export default function MatchTimer() {
       player1Wazari: match.player1Wazari || 0,
       player1Yuko: match.player1Yuko || 0,
       player1Warnings: match.player1Warnings || 0,
+      player1Senshu: match.player1Senshu || false,
       player2Ippon: match.player2Ippon || 0,
       player2Wazari: match.player2Wazari || 0,
       player2Yuko: match.player2Yuko || 0,
       player2Warnings: match.player2Warnings || 0,
+      player2Senshu: match.player2Senshu || false,
     };
 
     const change = increment ? 1 : -1;
@@ -303,10 +340,12 @@ export default function MatchTimer() {
           player1Wazari: currentData.player1Wazari,
           player1Yuko: currentData.player1Yuko,
           player1Warnings: currentData.player1Warnings,
+          player1Senshu: currentData.player1Senshu,
           player2Ippon: currentData.player2Ippon,
           player2Wazari: currentData.player2Wazari,
           player2Yuko: currentData.player2Yuko,
           player2Warnings: currentData.player2Warnings,
+          player2Senshu: currentData.player2Senshu,
         });
       }, 1000);
     } else if (currentData.player2Warnings >= 5) {
@@ -325,10 +364,12 @@ export default function MatchTimer() {
           player1Wazari: currentData.player1Wazari,
           player1Yuko: currentData.player1Yuko,
           player1Warnings: currentData.player1Warnings,
+          player1Senshu: currentData.player1Senshu,
           player2Ippon: currentData.player2Ippon,
           player2Wazari: currentData.player2Wazari,
           player2Yuko: currentData.player2Yuko,
           player2Warnings: currentData.player2Warnings,
+          player2Senshu: currentData.player2Senshu,
         });
       }, 1000);
     }
@@ -337,17 +378,36 @@ export default function MatchTimer() {
   const handleEndMatch = () => {
     const player1Score = match.player1Score || 0;
     const player2Score = match.player2Score || 0;
+    const player1Senshu = match.player1Senshu || false;
+    const player2Senshu = match.player2Senshu || false;
+    
+    let winnerId: string;
     
     if (player1Score === player2Score) {
-      toast({
-        title: "Error",
-        description: "Match cannot end in a tie. Please adjust scores.",
-        variant: "destructive",
-      });
-      return;
+      // Check for senshu (tie-breaker)
+      if (player1Senshu && !player2Senshu) {
+        winnerId = match.player1Id!;
+        toast({
+          title: "Senshu Victory!",
+          description: `${player1?.name || "Player 1"} wins by senshu (first point scored).`,
+        });
+      } else if (player2Senshu && !player1Senshu) {
+        winnerId = match.player2Id!;
+        toast({
+          title: "Senshu Victory!",
+          description: `${player2?.name || "Player 2"} wins by senshu (first point scored).`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Match cannot end in a tie. Please adjust scores or assign senshu to the player who scored first.",
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      winnerId = player1Score > player2Score ? match.player1Id! : match.player2Id!;
     }
-    
-    const winnerId = player1Score > player2Score ? match.player1Id! : match.player2Id!;
     
     completeMatchMutation.mutate({
       winnerId,
@@ -357,10 +417,12 @@ export default function MatchTimer() {
       player1Wazari: match.player1Wazari || undefined,
       player1Yuko: match.player1Yuko || undefined,
       player1Warnings: match.player1Warnings || undefined,
+      player1Senshu: match.player1Senshu || undefined,
       player2Ippon: match.player2Ippon || undefined,
       player2Wazari: match.player2Wazari || undefined,
       player2Yuko: match.player2Yuko || undefined,
       player2Warnings: match.player2Warnings || undefined,
+      player2Senshu: match.player2Senshu || undefined,
     });
   };
 
@@ -622,6 +684,33 @@ export default function MatchTimer() {
                     </Button>
                   </div>
                 </div>
+
+                {/* Senshu */}
+                <div className="flex items-center justify-between bg-white rounded-lg p-3">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-semibold">Senshu (1st point):</span>
+                    <span data-testid="text-player1-senshu" className={`px-3 py-1 rounded font-bold ${
+                      match.player1Senshu 
+                        ? "bg-purple-200 text-purple-900 border-2 border-purple-400" 
+                        : "bg-gray-100 text-gray-600"
+                    }`}>
+                      {match.player1Senshu ? "✓ YES" : "NO"}
+                    </span>
+                  </div>
+                  <Button
+                    data-testid="button-toggle-senshu1"
+                    onClick={() => handleSenshuToggle(1)}
+                    disabled={updateScoreMutation.isPending}
+                    className={`${
+                      match.player1Senshu 
+                        ? "bg-purple-500 hover:bg-purple-600" 
+                        : "bg-gray-400 hover:bg-gray-500"
+                    } text-white px-4 py-2 text-sm font-semibold`}
+                    size="sm"
+                  >
+                    Toggle
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -774,6 +863,33 @@ export default function MatchTimer() {
                     </Button>
                   </div>
                 </div>
+
+                {/* Senshu */}
+                <div className="flex items-center justify-between bg-white rounded-lg p-3">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-semibold">Senshu (1st point):</span>
+                    <span data-testid="text-player2-senshu" className={`px-3 py-1 rounded font-bold ${
+                      match.player2Senshu 
+                        ? "bg-purple-200 text-purple-900 border-2 border-purple-400" 
+                        : "bg-gray-100 text-gray-600"
+                    }`}>
+                      {match.player2Senshu ? "✓ YES" : "NO"}
+                    </span>
+                  </div>
+                  <Button
+                    data-testid="button-toggle-senshu2"
+                    onClick={() => handleSenshuToggle(2)}
+                    disabled={updateScoreMutation.isPending}
+                    className={`${
+                      match.player2Senshu 
+                        ? "bg-purple-500 hover:bg-purple-600" 
+                        : "bg-gray-400 hover:bg-gray-500"
+                    } text-white px-4 py-2 text-sm font-semibold`}
+                    size="sm"
+                  >
+                    Toggle
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -783,7 +899,7 @@ export default function MatchTimer() {
             <Button
               data-testid="button-end-match"
               onClick={handleEndMatch}
-              disabled={completeMatchMutation.isPending || (match.player1Score || 0) === (match.player2Score || 0)}
+              disabled={completeMatchMutation.isPending}
               className="bg-tournament-500 hover:bg-tournament-600 text-white px-8 py-4 text-lg font-semibold shadow-lg"
               size="lg"
             >
