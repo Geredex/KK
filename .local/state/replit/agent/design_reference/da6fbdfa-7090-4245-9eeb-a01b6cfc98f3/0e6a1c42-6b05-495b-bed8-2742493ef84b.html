@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEX - Shito Ryu Karate Tournament Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        'tournament': {
+                            50: '#eff6ff',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- @COMPONENT: AppHeader -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-tournament-500 p-2 rounded-lg">
+                        <i class="fas fa-fist-raised text-white text-xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-900">DEX</h1>
+                    <span class="text-sm text-gray-500 hidden sm:block">Shito Ryu Karate Tournament Manager</span>
+                </div>
+                <nav class="flex space-x-4">
+                    <button data-view="setup" class="nav-btn text-tournament-600 bg-tournament-50 px-4 py-2 rounded-lg font-medium">
+                        <i class="fas fa-plus mr-2"></i>New Tournament
+                    </button>
+                    <button data-view="bracket" class="nav-btn text-gray-600 hover:text-tournament-600 px-4 py-2 rounded-lg font-medium">
+                        <i class="fas fa-sitemap mr-2"></i>Bracket
+                    </button>
+                    <button data-view="timer" class="nav-btn text-gray-600 hover:text-tournament-600 px-4 py-2 rounded-lg font-medium">
+                        <i class="fas fa-stopwatch mr-2"></i>Timer
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: AppHeader -->
+
+    <!-- @COMPONENT: TournamentSetup -->
+    <div id="setup-view" class="view-container max-w-4xl mx-auto p-6">
+        <div class="bg-white rounded-xl shadow-lg p-8">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Create New Tournament</h2>
+                <p class="text-gray-600">Set up your Shito Ryu Karate kumite tournament</p>
+            </div>
+
+            <!-- Tournament Size Selection -->
+            <div class="mb-8">
+                <label class="block text-lg font-semibold text-gray-700 mb-4">Tournament Size</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <button class="tournament-size-btn bg-tournament-50 border-2 border-tournament-200 hover:border-tournament-500 rounded-xl p-6 text-center transition-all duration-200">
+                        <div class="text-2xl font-bold text-tournament-600 mb-2">16</div>
+                        <div class="text-sm text-gray-600">Players</div>
+                        <div class="text-xs text-gray-500 mt-2">4 Rounds</div>
+                    </button>
+                    <button class="tournament-size-btn border-2 border-gray-200 hover:border-tournament-500 rounded-xl p-6 text-center transition-all duration-200">
+                        <div class="text-2xl font-bold text-gray-700 mb-2">32</div>
+                        <div class="text-sm text-gray-600">Players</div>
+                        <div class="text-xs text-gray-500 mt-2">5 Rounds</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tournament Name -->
+            <div class="mb-8">
+                <label class="block text-lg font-semibold text-gray-700 mb-3">Tournament Name</label>
+                <input type="text" data-bind="tournament.name" placeholder="Enter tournament name..." 
+                       class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-tournament-500 focus:border-transparent text-lg">
+            </div>
+
+            <!-- Player List Management -->
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <label class="block text-lg font-semibold text-gray-700">Players</label>
+                    <span class="text-sm text-gray-500"><span data-bind="players.length">0</span>/16 players</span>
+                </div>
+                
+                <!-- Add Player Input -->
+                <div class="flex gap-3 mb-4">
+                    <input type="text" id="new-player-input" placeholder="Enter player name..." 
+                           class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tournament-500 focus:border-transparent">
+                    <button data-event="click:addPlayer" class="bg-tournament-500 hover:bg-tournament-600 text-white px-6 py-3 rounded-lg font-medium">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- Players Grid -->
+                <!-- @MAP: players.map((player, index) => ( -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div data-mock="true" class="player-card bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-tournament-100 text-tournament-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">1</div>
+                            <span data-bind="player.name" class="font-medium text-gray-900">Takeshi Yamamoto</span>
+                        </div>
+                        <button data-event="click:editPlayer" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                    <div data-mock="true" class="player-card bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-tournament-100 text-tournament-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">2</div>
+                            <span data-bind="player.name" class="font-medium text-gray-900">Kenji Nakamura</span>
+                        </div>
+                        <button data-event="click:editPlayer" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                    <div data-mock="true" class="player-card bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-tournament-100 text-tournament-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-medium">3</div>
+                            <span data-bind="player.name" class="font-medium text-gray-900">Hiroshi Tanaka</span>
+                        </div>
+                        <button data-event="click:editPlayer" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+
+            <!-- Start Tournament Button -->
+            <div class="flex justify-center">
+                <button data-event="click:startTournament" 
+                        class="bg-tournament-500 hover:bg-tournament-600 text-white px-8 py-4 rounded-xl text-xl font-semibold shadow-lg transition-colors duration-200">
+                    <i class="fas fa-play mr-3"></i>Start Tournament
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: TournamentSetup -->
+
+    <!-- @COMPONENT: TournamentBracket -->
+    <div id="bracket-view" class="view-container hidden max-w-7xl mx-auto p-6">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900" data-bind="tournament.name">Spring Championship</h2>
+                    <p class="text-gray-600">Round <span data-bind="tournament.currentRound">1</span> of <span data-bind="tournament.totalRounds">4</span></p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-500">
+                        <span data-bind="tournament.completedMatches">0</span>/<span data-bind="tournament.totalMatches">15</span> matches completed
+                    </div>
+                    <button data-event="click:resetTournament" class="text-red-600 hover:text-red-700 px-4 py-2 rounded-lg border border-red-200 hover:border-red-300">
+                        <i class="fas fa-redo mr-2"></i>Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bracket Visualization -->
+            <!-- @FUNCTIONALITY: Tournament bracket should display matches in elimination tree format -->
+            <div class="bracket-container overflow-x-auto">
+                <div class="bracket-grid min-w-max grid grid-cols-4 gap-8 p-6">
+                    <!-- Round 1 -->
+                    <div class="bracket-round">
+                        <h3 class="text-lg font-semibold text-center mb-4 text-gray-700">Round 1</h3>
+                        <div class="space-y-6">
+                            <!-- @MAP: round1Matches.map(match => ( -->
+                            <div data-mock="true" class="match-card bg-white border-2 border-gray-200 rounded-lg p-3 shadow-sm">
+                                <div class="match-player flex items-center justify-between p-2 border-b border-gray-100">
+                                    <span data-bind="match.player1.name" class="font-medium">Takeshi Yamamoto</span>
+                                    <span data-bind="match.player1.score" class="text-lg font-bold text-green-600">2</span>
+                                </div>
+                                <div class="match-player flex items-center justify-between p-2">
+                                    <span data-bind="match.player2.name" class="font-medium text-gray-500">Kenji Nakamura</span>
+                                    <span data-bind="match.player2.score" class="text-lg font-bold text-gray-400">1</span>
+                                </div>
+                                <div class="match-status bg-green-50 text-green-700 text-xs px-2 py-1 rounded mt-2 text-center">
+                                    <i class="fas fa-check mr-1"></i>Complete
+                                </div>
+                            </div>
+                            
+                            <div data-mock="true" class="match-card bg-white border-2 border-orange-200 rounded-lg p-3 shadow-sm">
+                                <div class="match-player flex items-center justify-between p-2 border-b border-gray-100">
+                                    <span data-bind="match.player1.name" class="font-medium">Hiroshi Tanaka</span>
+                                    <span data-bind="match.player1.score" class="text-lg font-bold text-tournament-600">1</span>
+                                </div>
+                                <div class="match-player flex items-center justify-between p-2">
+                                    <span data-bind="match.player2.name" class="font-medium">Yuki Matsui</span>
+                                    <span data-bind="match.player2.score" class="text-lg font-bold text-tournament-600">0</span>
+                                </div>
+                                <div class="match-status bg-orange-50 text-orange-700 text-xs px-2 py-1 rounded mt-2 text-center">
+                                    <i class="fas fa-clock mr-1"></i>In Progress
+                                </div>
+                            </div>
+
+                            <div data-mock="true" class="match-card bg-white border-2 border-gray-200 rounded-lg p-3 shadow-sm">
+                                <div class="match-player flex items-center justify-between p-2 border-b border-gray-100">
+                                    <span data-bind="match.player1.name" class="font-medium text-gray-400">TBD</span>
+                                    <span class="text-lg font-bold text-gray-300">-</span>
+                                </div>
+                                <div class="match-player flex items-center justify-between p-2">
+                                    <span data-bind="match.player2.name" class="font-medium text-gray-400">TBD</span>
+                                    <span class="text-lg font-bold text-gray-300">-</span>
+                                </div>
+                                <div class="match-status bg-gray-50 text-gray-500 text-xs px-2 py-1 rounded mt-2 text-center">
+                                    <i class="fas fa-hourglass mr-1"></i>Pending
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+
+                    <!-- Round 2 -->
+                    <div class="bracket-round">
+                        <h3 class="text-lg font-semibold text-center mb-4 text-gray-700">Quarter Finals</h3>
+                        <div class="space-y-12">
+                            <div data-mock="true" class="match-card bg-white border-2 border-gray-200 rounded-lg p-3 shadow-sm">
+                                <div class="match-player flex items-center justify-between p-2 border-b border-gray-100">
+                                    <span class="font-medium">Takeshi Yamamoto</span>
+                                    <span class="text-lg font-bold text-gray-300">-</span>
+                                </div>
+                                <div class="match-player flex items-center justify-between p-2">
+                                    <span class="font-medium text-gray-400">Winner Match 2</span>
+                                    <span class="text-lg font-bold text-gray-300">-</span>
+                                </div>
+                                <div class="match-status bg-gray-50 text-gray-500 text-xs px-2 py-1 rounded mt-2 text-center">
+                                    <i class="fas fa-hourglass mr-1"></i>Pending
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Semi Finals -->
+                    <div class="bracket-round">
+                        <h3 class="text-lg font-semibold text-center mb-4 text-gray-700">Semi Finals</h3>
+                        <div class="space-y-24">
+                            <div data-mock="true" class="match-card bg-white border-2 border-gray-200 rounded-lg p-3 shadow-sm">
+                                <div class="match-player flex items-center justify-between p-2 border-b border-gray-100">
+                                    <span class="font-medium text-gray-400">Winner QF1</span>
+                                    <span class="text-lg font-bold text-gray-300">-</span>
+                                </div>
+                                <div class="match-player flex items-center justify-between p-2">
+                                    <span class="font-medium text-gray-400">Winner QF2</span>
+                                    <span class="text-lg font-bold text-gray-300">-</span>
+                                </div>
+                                <div class="match-status bg-gray-50 text-gray-500 text-xs px-2 py-1 rounded mt-2 text-center">
+                                    <i class="fas fa-hourglass mr-1"></i>Pending
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Finals -->
+                    <div class="bracket-round">
+                        <h3 class="text-lg font-semibold text-center mb-4 text-gray-700">Final</h3>
+                        <div class="flex justify-center items-center h-full">
+                            <div data-mock="true" class="match-card bg-white border-2 border-gray-200 rounded-lg p-3 shadow-sm">
+                                <div class="match-player flex items-center justify-between p-2 border-b border-gray-100">
+                                    <span class="font-medium text-gray-400">Winner SF1</span>
+                                    <span class="text-lg font-bold text-gray-300">-</span>
+                                </div>
+                                <div class="match-player flex items-center justify-between p-2">
+                                    <span class="font-medium text-gray-400">Winner SF2</span>
+                                    <span class="text-lg font-bold text-gray-300">-</span>
+                                </div>
+                                <div class="match-status bg-gray-50 text-gray-500 text-xs px-2 py-1 rounded mt-2 text-center">
+                                    <i class="fas fa-hourglass mr-1"></i>Pending
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Match Info -->
+            <div class="mt-8 bg-orange-50 border border-orange-200 rounded-xl p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-orange-800 mb-1">Current Match</h3>
+                        <p class="text-orange-700">
+                            <span data-bind="currentMatch.player1">Hiroshi Tanaka</span> vs 
+                            <span data-bind="currentMatch.player2">Yuki Matsui</span>
+                        </p>
+                    </div>
+                    <button data-event="click:openTimer" class="bg-tournament-500 hover:bg-tournament-600 text-white px-6 py-3 rounded-lg font-medium">
+                        <i class="fas fa-stopwatch mr-2"></i>Open Timer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: TournamentBracket -->
+
+    <!-- @COMPONENT: MatchTimer -->
+    <div id="timer-view" class="view-container hidden max-w-4xl mx-auto p-6">
+        <div class="bg-white rounded-xl shadow-lg p-8">
+            <!-- Current Match Header -->
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Match Timer</h2>
+                <div class="bg-tournament-50 rounded-lg p-4">
+                    <div class="text-lg font-semibold text-tournament-700 mb-1">Current Match</div>
+                    <div class="text-2xl font-bold text-gray-900">
+                        <span data-bind="currentMatch.player1">Hiroshi Tanaka</span>
+                        <span class="text-tournament-500 mx-4">VS</span>
+                        <span data-bind="currentMatch.player2">Yuki Matsui</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timer Display -->
+            <!-- @STATE: timerSeconds:number = 120, isRunning:boolean = false -->
+            <div class="text-center mb-8">
+                <div class="bg-gray-900 rounded-2xl p-8 mb-6">
+                    <div class="timer-display text-8xl font-bold text-white font-mono" data-bind="timer.display">
+                        2:00
+                    </div>
+                    <div class="text-gray-400 text-lg mt-2">Match Time</div>
+                </div>
+
+                <!-- Timer Controls -->
+                <div class="flex justify-center space-x-4 mb-8">
+                    <button data-event="click:startTimer" data-implementation="Should start/pause timer" 
+                            class="timer-control bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-xl text-xl font-semibold shadow-lg transition-colors duration-200">
+                        <i class="fas fa-play mr-3"></i>Start
+                    </button>
+                    <button data-event="click:pauseTimer" data-implementation="Should pause running timer"
+                            class="timer-control bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-4 rounded-xl text-xl font-semibold shadow-lg transition-colors duration-200">
+                        <i class="fas fa-pause mr-3"></i>Pause
+                    </button>
+                    <button data-event="click:resetTimer" data-implementation="Should reset timer to 2:00"
+                            class="timer-control bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-xl text-xl font-semibold shadow-lg transition-colors duration-200">
+                        <i class="fas fa-redo mr-3"></i>Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Score Tracking -->
+            <div class="grid grid-cols-2 gap-8 mb-8">
+                <!-- Player 1 Score -->
+                <div class="score-section bg-blue-50 rounded-xl p-6 text-center">
+                    <h3 class="text-xl font-semibold text-blue-800 mb-4" data-bind="match.player1.name">Hiroshi Tanaka</h3>
+                    <div class="score-display text-6xl font-bold text-blue-600 mb-4" data-bind="match.player1.score">1</div>
+                    <div class="flex justify-center space-x-3">
+                        <button data-event="click:decrementScore1" class="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-full text-xl font-bold">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button data-event="click:incrementScore1" class="bg-green-500 hover:bg-green-600 text-white w-12 h-12 rounded-full text-xl font-bold">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Player 2 Score -->
+                <div class="score-section bg-red-50 rounded-xl p-6 text-center">
+                    <h3 class="text-xl font-semibold text-red-800 mb-4" data-bind="match.player2.name">Yuki Matsui</h3>
+                    <div class="score-display text-6xl font-bold text-red-600 mb-4" data-bind="match.player2.score">0</div>
+                    <div class="flex justify-center space-x-3">
+                        <button data-event="click:decrementScore2" class="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-full text-xl font-bold">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button data-event="click:incrementScore2" class="bg-green-500 hover:bg-green-600 text-white w-12 h-12 rounded-full text-xl font-bold">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Actions -->
+            <div class="flex justify-center space-x-4">
+                <button data-event="click:endMatch" data-implementation="Should finalize match and advance winner"
+                        class="bg-tournament-500 hover:bg-tournament-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg">
+                    <i class="fas fa-flag-checkered mr-3"></i>End Match
+                </button>
+                <button data-event="click:backToBracket" class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg">
+                    <i class="fas fa-arrow-left mr-3"></i>Back to Bracket
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: MatchTimer -->
+
+    <!-- Mobile Bottom Navigation (shown on small screens) -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 sm:hidden">
+        <div class="grid grid-cols-3 gap-1">
+            <button data-view="setup" class="mobile-nav-btn flex flex-col items-center py-3 text-tournament-600 bg-tournament-50">
+                <i class="fas fa-plus text-xl mb-1"></i>
+                <span class="text-xs">Setup</span>
+            </button>
+            <button data-view="bracket" class="mobile-nav-btn flex flex-col items-center py-3 text-gray-600">
+                <i class="fas fa-sitemap text-xl mb-1"></i>
+                <span class="text-xs">Bracket</span>
+            </button>
+            <button data-view="timer" class="mobile-nav-btn flex flex-col items-center py-3 text-gray-600">
+                <i class="fas fa-stopwatch text-xl mb-1"></i>
+                <span class="text-xs">Timer</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // TODO: Implement tournament state management, timer functionality, and bracket logic
+            
+            // View switching functionality
+            const views = ['setup', 'bracket', 'timer'];
+            const navButtons = document.querySelectorAll('.nav-btn, .mobile-nav-btn');
+            const viewContainers = document.querySelectorAll('.view-container');
+            
+            function showView(viewName) {
+                // Hide all views
+                viewContainers.forEach(container => container.classList.add('hidden'));
+                
+                // Show selected view
+                const targetView = document.getElementById(`${viewName}-view`);
+                if (targetView) {
+                    targetView.classList.remove('hidden');
+                }
+                
+                // Update navigation buttons
+                navButtons.forEach(btn => {
+                    btn.classList.remove('text-tournament-600', 'bg-tournament-50');
+                    btn.classList.add('text-gray-600');
+                });
+                
+                // Highlight active button
+                const activeButtons = document.querySelectorAll(`[data-view="${viewName}"]`);
+                activeButtons.forEach(btn => {
+                    btn.classList.remove('text-gray-600');
+                    btn.classList.add('text-tournament-600', 'bg-tournament-50');
+                });
+            }
+            
+            // Add click handlers to navigation buttons
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const viewName = btn.getAttribute('data-view');
+                    showView(viewName);
+                });
+            });
+            
+            // Tournament size selection
+            const sizeButtons = document.querySelectorAll('.tournament-size-btn');
+            sizeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    sizeButtons.forEach(b => {
+                        b.classList.remove('bg-tournament-50', 'border-tournament-200');
+                        b.classList.add('border-gray-200');
+                    });
+                    btn.classList.add('bg-tournament-50', 'border-tournament-200');
+                    btn.classList.remove('border-gray-200');
+                });
+            });
+            
+            // Demo timer functionality for visual feedback
+            let timerSeconds = 120;
+            let timerInterval = null;
+            const timerDisplay = document.querySelector('.timer-display');
+            
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timerSeconds / 60);
+                const seconds = timerSeconds % 60;
+                timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            function startTimer() {
+                if (timerInterval) return;
+                timerInterval = setInterval(() => {
+                    if (timerSeconds > 0) {
+                        timerSeconds--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                    }
+                }, 1000);
+            }
+            
+            function pauseTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }
+            
+            function resetTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                timerSeconds = 120;
+                updateTimerDisplay();
+            }
+            
+            // Timer control buttons
+            document.querySelector('[data-event="click:startTimer"]')?.addEventListener('click', startTimer);
+            document.querySelector('[data-event="click:pauseTimer"]')?.addEventListener('click', pauseTimer);
+            document.querySelector('[data-event="click:resetTimer"]')?.addEventListener('click', resetTimer);
+            
+            // Initialize view
+            showView('setup');
+        })();
+    </script>
+</body>
+</html>
